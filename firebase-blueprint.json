@@ -1,0 +1,354 @@
+{
+  "entities": {
+    "SiteContent": {
+      "title": "SiteContent",
+      "description": "Global editable website content including event date, announcements, deadlines, timeline milestones, voting config, and contact details.",
+      "type": "object",
+      "properties": {
+        "eventDate": {
+          "type": "string",
+          "description": "ISO-8601 event timestamp in Asia/Colombo timezone or empty string.",
+          "maxLength": 64
+        },
+        "eventDateDisplay": {
+          "type": "string",
+          "description": "Human-readable event date label.",
+          "maxLength": 80
+        },
+        "venue": {
+          "type": "string",
+          "description": "Event venue name.",
+          "maxLength": 160
+        },
+        "announcement": {
+          "type": "string",
+          "description": "Optional site-wide event announcement text.",
+          "maxLength": 600
+        },
+        "registrationDeadlineText": {
+          "type": "string",
+          "description": "General registration deadline summary.",
+          "maxLength": 300
+        },
+        "sponsorInfo": {
+          "type": "string",
+          "description": "Optional sponsor notice text.",
+          "maxLength": 600
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Optional contact email address.",
+          "maxLength": 160
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "Optional contact telephone number.",
+          "maxLength": 60
+        },
+        "shortFilmVotingFormUrl": {
+          "type": "string",
+          "description": "External Tally voting form URL or empty string.",
+          "maxLength": 500
+        },
+        "shortFilmVotingDeadline": {
+          "type": "string",
+          "description": "ISO-8601 voting deadline or empty string.",
+          "maxLength": 64
+        },
+        "timelineMilestones": {
+          "type": "array",
+          "description": "Ordered list of event timeline milestones."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "UID of admin who performed the update.",
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "eventDate",
+        "eventDateDisplay",
+        "venue",
+        "announcement",
+        "registrationDeadlineText",
+        "sponsorInfo",
+        "contactEmail",
+        "contactPhone",
+        "shortFilmVotingFormUrl",
+        "shortFilmVotingDeadline",
+        "timelineMilestones",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "CompetitionRecord": {
+      "title": "CompetitionRecord",
+      "description": "Editable competition details, registration status, form link, and assigned guidelines PDF.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "index": {
+          "type": "string",
+          "maxLength": 10
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Intra-School", "Inter-School", "Intra-School & Inter-School"]
+        },
+        "participationType": {
+          "type": "string",
+          "enum": ["Individual", "Team"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Coming Soon", "Open", "Closed"]
+        },
+        "eligibleGrades": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "teamSize": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "schoolLimit": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "maxDuration": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "shortDescription": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "fullDescription": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "registrationProvider": {
+          "type": "string",
+          "enum": ["Tally", "Google Forms", "External"]
+        },
+        "registrationFormUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "guidelinesDocId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "guidelinesPdfUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "rules": {
+          "type": "array"
+        },
+        "evaluationNotes": {
+          "type": "array"
+        },
+        "submissionNotice": {
+          "type": "string",
+          "maxLength": 600
+        },
+        "deadlineNotice": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "index",
+        "title",
+        "category",
+        "participationType",
+        "status",
+        "eligibleGrades",
+        "teamSize",
+        "schoolLimit",
+        "maxDuration",
+        "shortDescription",
+        "fullDescription",
+        "registrationProvider",
+        "registrationFormUrl",
+        "guidelinesDocId",
+        "guidelinesPdfUrl",
+        "rules",
+        "evaluationNotes",
+        "submissionNotice",
+        "deadlineNotice",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "DocumentMeta": {
+      "title": "DocumentMeta",
+      "description": "Metadata for uploaded or linked PDF documents (competition guidelines or general event documents).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["competition", "general"]
+        },
+        "competitionId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "fileName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "fileSize": {
+          "type": "number"
+        },
+        "mimeType": {
+          "type": "string",
+          "enum": ["application/pdf"]
+        },
+        "chunkCount": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "scope",
+        "competitionId",
+        "fileName",
+        "fileSize",
+        "mimeType",
+        "chunkCount",
+        "createdAt",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "DocumentChunk": {
+      "title": "DocumentChunk",
+      "description": "Base64-encoded PDF slice belonging to a DocumentMeta record.",
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "index": {
+          "type": "number"
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 750000
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "required": ["documentId", "index", "data", "updatedBy"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized InfraX administrator record.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/site_content/{docId}": {
+      "schema": { "$ref": "#/entities/SiteContent" },
+      "description": "Global editable InfraX event settings and announcements (primary document: 'main')."
+    },
+    "/competitions/{competitionId}": {
+      "schema": { "$ref": "#/entities/CompetitionRecord" },
+      "description": "Managed InfraX competition configurations and links."
+    },
+    "/documents/{docId}": {
+      "schema": { "$ref": "#/entities/DocumentMeta" },
+      "description": "Metadata for uploaded PDF guidelines and general event documents."
+    },
+    "/document_chunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/DocumentChunk" },
+      "description": "Chunked PDF payloads associated with documents/{docId}."
+    },
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Allowlisted admin UIDs."
+    },
+    "/test/{docId}": {
+      "schema": { "$ref": "#/entities/SiteContent" },
+      "description": "Startup Firestore connection validation path."
+    }
+  }
+}

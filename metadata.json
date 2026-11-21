@@ -1,0 +1,8 @@
+{
+  "name": "Remix InfraX — Bandaranayaka College ICT Day",
+  "description": "Official event website for InfraX, the ICT Day organized by the ICT Club of Bandaranayaka College – Kegalle, Sri Lanka. Beyond Infrastructure, Into The Future.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

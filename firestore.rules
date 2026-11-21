@@ -1,0 +1,361 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'wijnelum@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin()
+        || (
+          isSignedIn()
+          && request.auth.token.email_verified == true
+          && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    function isValidSiteContent(data) {
+      return data.keys().hasAll([
+          'eventDate',
+          'eventDateDisplay',
+          'venue',
+          'announcement',
+          'registrationDeadlineText',
+          'sponsorInfo',
+          'contactEmail',
+          'contactPhone',
+          'shortFilmVotingFormUrl',
+          'shortFilmVotingDeadline',
+          'timelineMilestones',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && data.keys().hasOnly([
+          'eventDate',
+          'eventDateDisplay',
+          'venue',
+          'announcement',
+          'registrationDeadlineText',
+          'sponsorInfo',
+          'contactEmail',
+          'contactPhone',
+          'shortFilmVotingFormUrl',
+          'shortFilmVotingDeadline',
+          'timelineMilestones',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && data.eventDate is string && data.eventDate.size() <= 64
+        && data.eventDateDisplay is string && data.eventDateDisplay.size() <= 80
+        && data.venue is string && data.venue.size() >= 1 && data.venue.size() <= 160
+        && data.announcement is string && data.announcement.size() <= 600
+        && data.registrationDeadlineText is string && data.registrationDeadlineText.size() <= 300
+        && data.sponsorInfo is string && data.sponsorInfo.size() <= 600
+        && data.contactEmail is string && data.contactEmail.size() <= 160
+        && data.contactPhone is string && data.contactPhone.size() <= 60
+        && data.shortFilmVotingFormUrl is string && data.shortFilmVotingFormUrl.size() <= 500
+        && data.shortFilmVotingDeadline is string && data.shortFilmVotingDeadline.size() <= 64
+        && data.timelineMilestones is list && data.timelineMilestones.size() <= 15
+        && (data.timelineMilestones.size() == 0 || data.timelineMilestones[0] is map)
+        && data.updatedAt is timestamp
+        && data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    function isValidCompetition(data) {
+      return data.keys().hasAll([
+          'id',
+          'slug',
+          'index',
+          'title',
+          'category',
+          'participationType',
+          'status',
+          'eligibleGrades',
+          'teamSize',
+          'schoolLimit',
+          'maxDuration',
+          'shortDescription',
+          'fullDescription',
+          'registrationProvider',
+          'registrationFormUrl',
+          'guidelinesDocId',
+          'guidelinesPdfUrl',
+          'rules',
+          'evaluationNotes',
+          'submissionNotice',
+          'deadlineNotice',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && data.keys().hasOnly([
+          'id',
+          'slug',
+          'index',
+          'title',
+          'category',
+          'participationType',
+          'status',
+          'eligibleGrades',
+          'teamSize',
+          'schoolLimit',
+          'maxDuration',
+          'shortDescription',
+          'fullDescription',
+          'registrationProvider',
+          'registrationFormUrl',
+          'guidelinesDocId',
+          'guidelinesPdfUrl',
+          'rules',
+          'evaluationNotes',
+          'submissionNotice',
+          'deadlineNotice',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.slug)
+        && data.index is string && data.index.size() >= 1 && data.index.size() <= 10
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 120
+        && data.category in ['Intra-School', 'Inter-School', 'Intra-School & Inter-School']
+        && data.participationType in ['Individual', 'Team']
+        && data.status in ['Coming Soon', 'Open', 'Closed']
+        && data.eligibleGrades is string && data.eligibleGrades.size() <= 80
+        && data.teamSize is string && data.teamSize.size() <= 80
+        && data.schoolLimit is string && data.schoolLimit.size() <= 120
+        && data.maxDuration is string && data.maxDuration.size() <= 80
+        && data.shortDescription is string && data.shortDescription.size() >= 1 && data.shortDescription.size() <= 400
+        && data.fullDescription is string && data.fullDescription.size() >= 1 && data.fullDescription.size() <= 2000
+        && data.registrationProvider in ['Tally', 'Google Forms', 'External']
+        && data.registrationFormUrl is string && data.registrationFormUrl.size() <= 500
+        && data.guidelinesDocId is string && data.guidelinesDocId.size() <= 128
+        && data.guidelinesPdfUrl is string && data.guidelinesPdfUrl.size() <= 500
+        && data.rules is list && data.rules.size() <= 20
+        && (data.rules.size() == 0 || data.rules[0] is string)
+        && data.evaluationNotes is list && data.evaluationNotes.size() <= 10
+        && (data.evaluationNotes.size() == 0 || data.evaluationNotes[0] is string)
+        && data.submissionNotice is string && data.submissionNotice.size() <= 600
+        && data.deadlineNotice is string && data.deadlineNotice.size() <= 400
+        && data.updatedAt is timestamp
+        && data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    function isValidDocumentMeta(data) {
+      return data.keys().hasAll([
+          'id',
+          'title',
+          'description',
+          'scope',
+          'competitionId',
+          'fileName',
+          'fileSize',
+          'mimeType',
+          'chunkCount',
+          'createdAt',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && data.keys().hasOnly([
+          'id',
+          'title',
+          'description',
+          'scope',
+          'competitionId',
+          'fileName',
+          'fileSize',
+          'mimeType',
+          'chunkCount',
+          'createdAt',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && isValidId(data.id)
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 140
+        && data.description is string && data.description.size() <= 500
+        && data.scope in ['competition', 'general']
+        && data.competitionId is string && data.competitionId.size() <= 128
+        && data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 200
+        && data.fileSize is number && data.fileSize > 0 && data.fileSize <= 4194304
+        && data.mimeType == 'application/pdf'
+        && data.chunkCount is number && data.chunkCount >= 1 && data.chunkCount <= 10
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    function isValidDocumentChunk(data) {
+      return data.keys().hasAll(['documentId', 'index', 'data', 'updatedBy'])
+        && data.keys().hasOnly(['documentId', 'index', 'data', 'updatedBy'])
+        && isValidId(data.documentId)
+        && data.index is number && data.index >= 0 && data.index <= 9
+        && data.data is string && data.data.size() >= 1 && data.data.size() <= 750000
+        && data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['email', 'createdAt'])
+        && data.keys().hasOnly(['email', 'createdAt'])
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 160
+        && data.createdAt is timestamp;
+    }
+
+    // Publicly readable site configuration; admin-only writes
+    match /site_content/{docId} {
+      allow get: if isValidId(docId) && docId == 'main';
+      allow list: if false;
+      allow create: if isValidId(docId) && docId == 'main'
+        && isValidSiteContent(incoming())
+        && incoming().updatedAt == request.time
+        && isAdmin();
+      allow update: if isValidId(docId) && docId == 'main'
+        && isValidSiteContent(incoming())
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'eventDate',
+          'eventDateDisplay',
+          'venue',
+          'announcement',
+          'registrationDeadlineText',
+          'sponsorInfo',
+          'contactEmail',
+          'contactPhone',
+          'shortFilmVotingFormUrl',
+          'shortFilmVotingDeadline',
+          'timelineMilestones',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && isAdmin();
+      allow delete: if false;
+    }
+
+    // Publicly readable competitions; admin-only writes
+    match /competitions/{competitionId} {
+      allow get: if isValidId(competitionId);
+      allow list: if true;
+      allow create: if isValidId(competitionId)
+        && isValidCompetition(incoming())
+        && incoming().id == competitionId
+        && incoming().updatedAt == request.time
+        && isAdmin();
+      allow update: if isValidId(competitionId)
+        && isValidCompetition(incoming())
+        && incoming().id == existing().id
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'slug',
+          'index',
+          'title',
+          'category',
+          'participationType',
+          'status',
+          'eligibleGrades',
+          'teamSize',
+          'schoolLimit',
+          'maxDuration',
+          'shortDescription',
+          'fullDescription',
+          'registrationProvider',
+          'registrationFormUrl',
+          'guidelinesDocId',
+          'guidelinesPdfUrl',
+          'rules',
+          'evaluationNotes',
+          'submissionNotice',
+          'deadlineNotice',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && isAdmin();
+      allow delete: if isValidId(competitionId) && isAdmin();
+    }
+
+    // Publicly readable PDF document metadata; admin-only writes
+    match /documents/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if true;
+      allow create: if isValidId(docId)
+        && isValidDocumentMeta(incoming())
+        && incoming().id == docId
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isAdmin();
+      allow update: if isValidId(docId)
+        && isValidDocumentMeta(incoming())
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title',
+          'description',
+          'scope',
+          'competitionId',
+          'fileName',
+          'fileSize',
+          'mimeType',
+          'chunkCount',
+          'updatedAt',
+          'updatedBy'
+        ])
+        && isAdmin();
+      allow delete: if isValidId(docId) && isAdmin();
+    }
+
+    // Publicly readable deterministic PDF chunks; admin-only atomic writes
+    match /document_chunks/{chunkId} {
+      allow get: if isValidId(chunkId);
+      allow list: if false;
+      allow create: if isValidId(chunkId)
+        && isValidDocumentChunk(incoming())
+        && isAdmin()
+        && existsAfter(/databases/$(database)/documents/documents/$(incoming().documentId));
+      allow update: if isValidId(chunkId)
+        && isValidDocumentChunk(incoming())
+        && incoming().documentId == existing().documentId
+        && incoming().diff(existing()).affectedKeys().hasOnly(['index', 'data', 'updatedBy'])
+        && isAdmin()
+        && existsAfter(/databases/$(database)/documents/documents/$(incoming().documentId));
+      allow delete: if isValidId(chunkId) && isAdmin();
+    }
+
+    // Strictly private admin registry
+    match /admins/{uid} {
+      allow get: if isValidId(uid) && ((isSignedIn() && request.auth.uid == uid) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isValidId(uid)
+        && isValidAdminUser(incoming())
+        && incoming().createdAt == request.time
+        && isAdmin();
+      allow update: if false;
+      allow delete: if isValidId(uid) && isAdmin();
+    }
+
+    // Startup Firestore connection check path
+    match /test/{docId} {
+      allow get: if isValidId(docId) && docId == 'connection';
+      allow list, write: if false;
+    }
+  }
+}
